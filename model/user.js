@@ -4,14 +4,11 @@ const Schema = mongoose.Schema
 
 
 const userSchema =  Schema({
-    firstName:{
+    name:{
         type: String,
         required: true,
     },
-    lastName :{
-        type: String,
-        required : true
-    },
+  
     email : {
         type:String,
         required : true
@@ -19,7 +16,18 @@ const userSchema =  Schema({
     gender : {
          type: String,
          enum : ["male", "female"]
-    } 
+    },
+    chat: [{
+        type:Schema.Types.ObjectId,
+        ref: "Chat"
+    }],
+    password : {
+        type:String
+    },
+    pic : {
+        type:String,
+        default : ""
+    }
 })
 
 

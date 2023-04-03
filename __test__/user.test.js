@@ -14,8 +14,7 @@ describe("POST /api/signup", ()=>{
 
     test("return 400 if any input is missing", async()=>{
         const resp = await request(app).post("/api/signup").send({
-            firstName : "John",
-            lastName : "Doe",
+            name : "John"
         })
         expect(resp.statusCode).toBe(400)
         expect(resp.text).toEqual("Kindly fill all required input");
@@ -24,16 +23,14 @@ describe("POST /api/signup", ()=>{
     })
     test("return 409 if user with email already exist", async()=>{  
        await User.create({
-            firstName: 'John',
-            lastName: 'Doe',
+            name: 'John',
             email: 'ja@example.com',
             password: 'testpass',
         })
           const res = await request(app)
             .post('/api/signup')
             .send({
-             firstName: 'John',
-              lastName: 'Doe',
+             name: 'John',
               email: 'ja@example.com',
               password: 'testpass',
             })
@@ -41,12 +38,11 @@ describe("POST /api/signup", ()=>{
           expect(res.text).toEqual("User with this email already exist");
 
         }) 
-        test('creates a user and returns a token', async () => {
+        test('creates a user and return a token', async () => {
             const response = await request(app)
               .post('/api/signup')
               .send({
-                firstName: 'John',
-                lastName: 'Doe',
+                name: 'John',
                 email: 'janee@example.com',
                 password: 'testpass',
               });

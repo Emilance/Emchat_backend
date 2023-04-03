@@ -1,59 +1,74 @@
 const  express = require("express")
 const mongoose = require("mongoose")
-const  http  = require('http')
 const bodyParser = require('body-parser');
-const  {Server} = require('socket.io')
 const cors = require('cors')
 const userRoute = require('./route/user').router
+const chatRoute = require('./route/chat').router
+const messageRoute = require("./route/message").router
 
+require('dotenv').config()
 
 const app = express()
-const PORT = process.env.PORT | 4000
+
 app.use(cors())
-const server = http.createServer(app)
 app.use(bodyParser.json());
 
+const PORT = process.env.PORT | 4000
 
-const io = new Server(server , {
-    cors: {
-        origin: "*",
-        methods: ["GET", "POST"]
-    }
-})
+app.use("/api/user", userRoute)
+app.use("/api/chat", chatRoute)
+app.use("/api/message", messageRoute)
 
-io.on("connection", (socket)=>{
-    console.log(`user ${socket.id} connected`)
-    
-    socket.on("join_room",   (data)=>{
-        socket.join(data)
-        console.log(`User with id ${socket.id} joined room ${data}`)
-    })
-    socket.on("send_message",  (data)=>{
-        console.log(data)
-        socket.broadcast.emit("receive_message", data)
-    })
-    
-    
-})
-const mongoURL = "mongodb+srv://emibrandlance:emibrandlance@cluster0.jcqf7hv.mongodb.net/?retryWrites=true&w=majority"
-
-app.use("/api", userRoute)
 app.get("/", (req, res) => {
     res.send("working perfectly well")
 })
 
+
+
+
+
+
+
+
+const mongoURL = "mongodb+srv://emibrandlance:emibrandlance@cluster0.jcqf7hv.mongodb.net/?retryWrites=true&w=majority"
+
 mongoose.set("strictQuery", true);
 
 mongoose.connect(mongoURL, {
-    useNewUrlParser: true, useUnifiedTopology: true
+    useNewUrlParser: true, 
 }).then(() => {
-    server.listen(PORT , ()=>{
+    app.listen(PORT , ()=>{
         console.log(`listening on port ${PORT}`)
     })
 }).catch((err) => {
     console.log(err.message + "000 errrrror")
 })
 
+
+
+
+
+// const io = new Server(server , {
+//     cors: {
+//         origin: "*",
+//         methods: ["GET", "POST"]
+//     }
+// })
+
+// io.on("connection", (socket)=>{
+//     console.log(`user ${socket.id} connected`)
+    
+//     socket.on("join_room",   (data)=>{
+//         socket.join(data)
+//         console.log(`User with id ${socket.id} joined room ${data}`)
+//     })
+//     socket.on("send_message",  (data)=>{
+//         console.log(data)
+//         socket.broadcast.emit("receive_message", data)
+//     })
+    
+    
+// })
 
 
 

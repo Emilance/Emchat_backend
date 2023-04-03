@@ -1,14 +1,14 @@
 const  bcrypt = require("bcrypt")
-const jwt = require("jsonwebtoken")
 const { User } = require("../model/user")
+const { generateToken } = require("../utils/generateToken")
 
 
 const signUp = async (req, res) => {
     //get andd validate user input
     
-    const { firstName, lastName, email, password, gender } = req.body
+    const { name, email, password, gender  } = req.body
     try {
-       if (!(firstName, lastName, password, email)) {
+       if (!(name, password, email)) {
         return  res.status(400).send("Kindly fill all required input")
        }
  
@@ -17,7 +17,7 @@ const signUp = async (req, res) => {
        const existingUser = await User.findOne({ email })
        if (existingUser) {
           console.log(existingUser)
-          return res.status(409).send("User with this email already exist")
+           res.status(409).json("User with this email already exist")
        } else {
  
  
@@ -26,19 +26,17 @@ const signUp = async (req, res) => {
  
           //add user to DB
           const user = await User.create({
-             firstName,
-             lastName,
+             name,
              email: email.toLowerCase(),
-             password: encryptedPassword
+             password: encryptedPassword,
+             gender
           })
  
           //create a   token
-          const token = jwt.sign({
-             user_id: user._id,
-             email
-          },
-             process.env.TOKEN_KEY
-          )
+          const token = generateToken({
+            user_id: user._id,
+            email
+         })
  
           user.token = token
         
@@ -46,7 +44,6 @@ const signUp = async (req, res) => {
           res.status(201).json({
              user,
              token,
-             role,
              message: "User created successfully",
           })
  
@@ -72,12 +69,10 @@ const login = async (req, res) => {
  
        //get user
        const user = await User.findOne({ email })
+       console.log(email)
        if (user) {
           if (await bcrypt.compare(password, user.password)) {
-             const token = jwt.sign(
-                { user_id: user._id, email },
-                process.env.TOKEN_KEY
-             )
+             const token = generateToken( { user_id: user._id, email })
              user.token = token
              res.status(201).json({
                 user, token,
@@ -92,11 +87,28 @@ const login = async (req, res) => {
     } catch (error) {
        res.json({
           status: "FAILED",
-          status_code: 200,
           message: error.message
        })
     }
  }
+
+ const getUser = async (req, res)=>{
+   const keyword = req.query.search  ?{
+     $or: [ {name : {$regex : req.query.search, $options: "i" }},
+            {email : {$regex:req.query.search, $options: "i" }}]
+
+   } : {}
+   try {
+      const users =  await User.find(keyword)
+      res.status(200).send(users)
+      
+   } catch (error) {
+      res.status(400).json({
+         status: "FAILED",
+         message: error.message
+      })
+   }
+ }
  
 
- module.exports ={signUp , login}
+ module.exports ={signUp , login, getUser}
