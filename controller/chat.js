@@ -23,9 +23,8 @@ const accessChat = async (req, res)=>{
 
 
      if (existingChat.length > 0) {
-        res.status(200).json({
-            existingChat :existingChat[0]
-        })
+         existingChat = existingChat[0]
+        res.status(200).json(existingChat)
      } else {
         try {
             const newChat = await Chat.create({

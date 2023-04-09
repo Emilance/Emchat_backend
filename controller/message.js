@@ -1,4 +1,3 @@
-const { response } = require("..")
 const { Chat } = require("../model/Chat")
 const Message = require("../model/Message")
 const { User } = require("../model/user")
@@ -13,32 +12,36 @@ const sendMessage = async (req, res) =>{
 
     try {
         var newMessage = await Message.create({
-            sender : req.user.user_Id,
+            sender : req.user.user_id,
             content,
             chat : chatId
         })
-        newMessage = await newMessage.populate("sender", "name pic")
-        .populate("chat")
-        newMessage = await User.populate(newMessage, {
+        var  fullMessage = await Message.findById(newMessage._id).populate("sender", "name email gender").populate("chat")
+        console.log(fullMessage)
+        fullMessage = await User.populate(fullMessage, {
             path: "chat.users",
             select : "name pic email"
         })
 
-        await Chat.findByIdAndUpdate(chatId, {
-            latestMessage : newMessage
-        })
-        response.status(201).json(latestMessage)
+        await Chat.findByIdAndUpdate( chatId, {
+         latestMessage : fullMessage
+        },
+        { returnOriginal: false }
+        )
+        res.status(201).json(fullMessage)
     } catch (error) {
         res.status(400).json({
             status: "FAILED",
             message: error.message
          })
+
     }
 }
 
 
 const allMessages = async (req, res) => {
    const  chatId = req.params.chatId
+   console.log(chatId)
    try {
     const messages = await Message.find({chat : chatId}) .populate("sender", "pic name email")
     .populate("chat")
@@ -54,4 +57,4 @@ const allMessages = async (req, res) => {
 
 
 
-module.exports = {sendMessage}
+module.exports = {sendMessage , allMessages}

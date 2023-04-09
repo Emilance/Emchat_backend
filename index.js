@@ -10,8 +10,9 @@ require('dotenv').config()
 
 const app = express()
 
-app.use(cors())
+
 app.use(bodyParser.json());
+app.use(cors())
 
 const PORT = process.env.PORT | 4000
 
@@ -30,8 +31,8 @@ app.get("/", (req, res) => {
 
 
 
-const mongoURL = "mongodb+srv://emibrandlance:emibrandlance@cluster0.jcqf7hv.mongodb.net/?retryWrites=true&w=majority"
-
+const mongoURL = process.env.MONGO_URL
+console.log(mongoURL)
 mongoose.set("strictQuery", true);
 
 mongoose.connect(mongoURL, {
